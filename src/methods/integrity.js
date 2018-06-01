@@ -13,7 +13,7 @@ import type { Realm } from "../realm.js";
 import { ObjectValue } from "../values/index.js";
 import { IsExtensible, IsDataDescriptor, IsAccessorDescriptor } from "./index.js";
 import { Properties } from "../singletons.js";
-import { FatalError } from "../errors.js";
+import { CompilerDiagnostic, FatalError } from "../errors.js";
 import invariant from "../invariant.js";
 
 type IntegrityLevels = "sealed" | "frozen";
@@ -21,6 +21,9 @@ type IntegrityLevels = "sealed" | "frozen";
 // ECMA262 9.1.4.1
 export function OrdinaryPreventExtensions(realm: Realm, O: ObjectValue): boolean {
   if (O.mightBeHavocedObject() && O.getExtensible()) {
+    let loc = realm.currentLocation;
+    let error = new CompilerDiagnostic("havoced object", loc, "PP0001", "FatalError");
+    realm.handleError(error);
     // todo: emit a diagnostic messsage
     throw new FatalError();
   }
